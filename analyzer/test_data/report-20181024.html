@@ -1,0 +1,137 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>rbui log analysis report</title>
+  <meta name="description" content="rbui log analysis report">
+  <style type="text/css">
+    html, body {
+      background-color: black;
+    }
+    th {
+      text-align: center;
+      color: silver;
+      font-style: bold;
+      padding: 5px;
+      cursor: pointer;
+    }
+    table {
+      width: auto;
+      border-collapse: collapse;
+      margin: 1%;
+      color: silver;
+    }
+    td {
+      text-align: right;
+      font-size: 1.1em;
+      padding: 5px;
+    }
+    .report-table-body-cell-url {
+      text-align: left;
+      width: 20%;
+    }
+    .clipped {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow:hidden !important;
+      max-width: 700px;
+      word-wrap: break-word;
+      display:inline-block;
+    }
+    .url {
+      cursor: pointer;
+      color: #729FCF;
+    }
+    .alert {
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <table border="1" class="report-table">
+  <thead>
+    <tr class="report-table-header-row">
+    </tr>
+  </thead>
+  <tbody class="report-table-body">
+  </tbody>
+
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="jquery.tablesorter.min.js"></script> 
+  <script type="text/javascript">
+  !function($) {
+    var table = [{"count": 112, "count_perc": 0.112, "time_avg": 60.084, "time_max": 60.414, "time_med": 60.078, "time_perc": 9.192, "time_sum": 6729.448, "url": "/api/v2/internal/html5/phantomjs/queue/?wait=1m"}, {"count": 57, "count_perc": 0.057, "time_avg": 60.174, "time_max": 60.46, "time_med": 60.153, "time_perc": 4.685, "time_sum": 3429.904, "url": "/api/v2/internal/gpmd_plan_report/queue/?wait=1m&worker=5"}, {"count": 56, "count_perc": 0.056, "time_avg": 60.16, "time_max": 60.518, "time_med": 60.146, "time_perc": 4.602, "time_sum": 3368.943, "url": "/api/v2/internal/gpmd_plan_report/queue/?wait=1m&worker=3"}, {"count": 56, "count_perc": 0.056, "time_avg": 60.157, "time_max": 60.316, "time_med": 60.145, "time_perc": 4.601, "time_sum": 3368.813, "url": "/api/v2/internal/gpmd_plan_report/queue/?wait=1m&worker=2"}, {"count": 56, "count_perc": 0.056, "time_avg": 60.152, "time_max": 60.432, "time_med": 60.135, "time_perc": 4.601, "time_sum": 3368.488, "url": "/api/v2/internal/gpmd_plan_report/queue/?wait=1m&worker=4"}, {"count": 56, "count_perc": 0.056, "time_avg": 60.15, "time_max": 60.422, "time_med": 60.131, "time_perc": 4.601, "time_sum": 3368.419, "url": "/api/v2/internal/gpmd_plan_report/queue/?wait=1m&worker=1"}, {"count": 53, "count_perc": 0.053, "time_avg": 16.364, "time_max": 16.607, "time_med": 16.357, "time_perc": 1.185, "time_sum": 867.291, "url": "/export/ivi/200010-impression.csv"}, {"count": 27, "count_perc": 0.027, "time_avg": 13.276, "time_max": 15.383, "time_med": 13.426, "time_perc": 0.49, "time_sum": 358.463, "url": "/campaigns/7854376/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 10.824, "time_max": 13.839, "time_med": 10.605, "time_perc": 0.399, "time_sum": 292.247, "url": "/campaigns/7854473/banners/?"}, {"count": 10, "count_perc": 0.01, "time_avg": 24.673, "time_max": 29.822, "time_med": 27.386, "time_perc": 0.337, "time_sum": 246.734, "url": "/api/v2/internal/slots"}, {"count": 2, "count_perc": 0.002, "time_avg": 109.302, "time_max": 218.601, "time_med": 109.302, "time_perc": 0.299, "time_sum": 218.604, "url": "//api/1/banners/"}, {"count": 27, "count_perc": 0.027, "time_avg": 6.277, "time_max": 10.644, "time_med": 5.977, "time_perc": 0.232, "time_sum": 169.488, "url": "/campaigns/7876636/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 6.203, "time_max": 8.069, "time_med": 5.951, "time_perc": 0.229, "time_sum": 167.47, "url": "/campaigns/7854362/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 5.123, "time_max": 7.246, "time_med": 4.907, "time_perc": 0.189, "time_sum": 138.309, "url": "/campaigns/7876633/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 5.122, "time_max": 6.202, "time_med": 4.991, "time_perc": 0.189, "time_sum": 138.286, "url": "/campaigns/7854359/banners/?"}, {"count": 2, "count_perc": 0.002, "time_avg": 65.677, "time_max": 70.413, "time_med": 65.677, "time_perc": 0.179, "time_sum": 131.353, "url": "/api/1/banners/?campaign=1200302"}, {"count": 2, "count_perc": 0.002, "time_avg": 65.541, "time_max": 65.696, "time_med": 65.541, "time_perc": 0.179, "time_sum": 131.082, "url": "/api/1/banners/?campaign=1392872"}, {"count": 26, "count_perc": 0.026, "time_avg": 4.806, "time_max": 8.785, "time_med": 4.689, "time_perc": 0.171, "time_sum": 124.943, "url": "/campaigns/7854389/banners/?"}, {"count": 1, "count_perc": 0.001, "time_avg": 122.995, "time_max": 122.995, "time_med": 122.995, "time_perc": 0.168, "time_sum": 122.995, "url": "/api/v2/slot/2406/groups"}, {"count": 26, "count_perc": 0.026, "time_avg": 4.73, "time_max": 6.436, "time_med": 4.482, "time_perc": 0.168, "time_sum": 122.992, "url": "/campaigns/7854408/banners/?"}, {"count": 7, "count_perc": 0.007, "time_avg": 17.438, "time_max": 22.101, "time_med": 18.395, "time_perc": 0.167, "time_sum": 122.066, "url": "/api/v2/slot/2902/groups"}, {"count": 27, "count_perc": 0.027, "time_avg": 3.919, "time_max": 5.697, "time_med": 3.879, "time_perc": 0.145, "time_sum": 105.816, "url": "/campaigns/7854366/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 3.545, "time_max": 5.185, "time_med": 3.427, "time_perc": 0.131, "time_sum": 95.714, "url": "/campaigns/7854372/banners/?"}, {"count": 7, "count_perc": 0.007, "time_avg": 13.026, "time_max": 14.374, "time_med": 13.034, "time_perc": 0.125, "time_sum": 91.185, "url": "/api/1/banners/?campaign=3098083"}, {"count": 7, "count_perc": 0.007, "time_avg": 12.484, "time_max": 14.611, "time_med": 12.537, "time_perc": 0.119, "time_sum": 87.389, "url": "/api/1/banners/?campaign=2320799"}, {"count": 5, "count_perc": 0.005, "time_avg": 16.153, "time_max": 23.844, "time_med": 14.722, "time_perc": 0.11, "time_sum": 80.764, "url": "/api/1/banners/?campaign=3431890"}, {"count": 7, "count_perc": 0.007, "time_avg": 11.47, "time_max": 18.525, "time_med": 10.507, "time_perc": 0.11, "time_sum": 80.293, "url": "/api/1/banners/?campaign=3098094"}, {"count": 2, "count_perc": 0.002, "time_avg": 39.072, "time_max": 78.139, "time_med": 39.072, "time_perc": 0.107, "time_sum": 78.143, "url": "//sites/165/"}, {"count": 105, "count_perc": 0.105, "time_avg": 0.736, "time_max": 23.158, "time_med": 0.136, "time_perc": 0.106, "time_sum": 77.331, "url": "/api/1/flash_banners/list/?server_name=AndreySemenovich"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.644, "time_max": 16.714, "time_med": 0.129, "time_perc": 0.097, "time_sum": 70.868, "url": "/api/1/photogenic_banners/list/?server_name=WIN7RB2"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.541, "time_max": 12.645, "time_med": 2.163, "time_perc": 0.094, "time_sum": 68.604, "url": "/campaigns/7894082/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.539, "time_max": 4.684, "time_med": 2.51, "time_perc": 0.094, "time_sum": 68.542, "url": "/campaigns/7854358/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.476, "time_max": 3.553, "time_med": 2.575, "time_perc": 0.091, "time_sum": 66.844, "url": "/campaigns/7876648/banners/?"}, {"count": 107, "count_perc": 0.107, "time_avg": 0.623, "time_max": 17.355, "time_med": 0.226, "time_perc": 0.091, "time_sum": 66.62, "url": "/api/1/flash_banners/list/?server_name=AndreySergeevich"}, {"count": 7, "count_perc": 0.007, "time_avg": 9.417, "time_max": 11.419, "time_med": 9.226, "time_perc": 0.09, "time_sum": 65.918, "url": "/api/v2/slot/4499/groups"}, {"count": 1, "count_perc": 0.001, "time_avg": 62.397, "time_max": 62.397, "time_med": 62.397, "time_perc": 0.085, "time_sum": 62.397, "url": "/agency/campaigns/6465912/banners/bulk_read/"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.305, "time_max": 3.948, "time_med": 2.231, "time_perc": 0.085, "time_sum": 62.241, "url": "/campaigns/7854458/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.238, "time_max": 4.224, "time_med": 2.119, "time_perc": 0.083, "time_sum": 60.421, "url": "/campaigns/7894070/banners/?"}, {"count": 27, "count_perc": 0.027, "time_avg": 2.238, "time_max": 4.129, "time_med": 2.195, "time_perc": 0.083, "time_sum": 60.419, "url": "/campaigns/7854365/banners/?"}, {"count": 26, "count_perc": 0.026, "time_avg": 2.306, "time_max": 3.244, "time_med": 2.323, "time_perc": 0.082, "time_sum": 59.965, "url": "/campaigns/7854352/banners/?"}, {"count": 55, "count_perc": 0.055, "time_avg": 1.012, "time_max": 6.842, "time_med": 0.833, "time_perc": 0.076, "time_sum": 55.634, "url": "/campaigns/7704673/banners/"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.494, "time_max": 15.993, "time_med": 0.132, "time_perc": 0.074, "time_sum": 54.311, "url": "/api/1/flash_banners/list/?server_name=AndreyIvanovich"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.489, "time_max": 12.668, "time_med": 0.129, "time_perc": 0.073, "time_sum": 53.788, "url": "/api/1/photogenic_banners/list/?server_name=WIN7RB1"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.482, "time_max": 16.57, "time_med": 0.134, "time_perc": 0.072, "time_sum": 53.074, "url": "/api/1/flash_banners/list/?server_name=AndreyLvovich"}, {"count": 273, "count_perc": 0.273, "time_avg": 0.194, "time_max": 1.128, "time_med": 0.163, "time_perc": 0.072, "time_sum": 52.881, "url": "/api/v2/banner/16848376"}, {"count": 273, "count_perc": 0.273, "time_avg": 0.193, "time_max": 0.859, "time_med": 0.155, "time_perc": 0.072, "time_sum": 52.825, "url": "/api/v2/banner/16168711"}, {"count": 55, "count_perc": 0.055, "time_avg": 0.957, "time_max": 2.217, "time_med": 0.897, "time_perc": 0.072, "time_sum": 52.623, "url": "/campaigns/7806980/banners/"}, {"count": 292, "count_perc": 0.292, "time_avg": 0.179, "time_max": 0.943, "time_med": 0.151, "time_perc": 0.071, "time_sum": 52.188, "url": "/api/v2/banner/794450"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.191, "time_max": 0.978, "time_med": 0.154, "time_perc": 0.071, "time_sum": 52.034, "url": "/api/v2/banner/1218585"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.19, "time_max": 0.874, "time_med": 0.154, "time_perc": 0.07, "time_sum": 51.563, "url": "/api/v2/banner/1279875"}, {"count": 273, "count_perc": 0.273, "time_avg": 0.188, "time_max": 0.632, "time_med": 0.165, "time_perc": 0.07, "time_sum": 51.265, "url": "/api/v2/banner/21456892"}, {"count": 273, "count_perc": 0.273, "time_avg": 0.187, "time_max": 0.773, "time_med": 0.156, "time_perc": 0.07, "time_sum": 50.925, "url": "/api/v2/banner/16852664"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.186, "time_max": 1.063, "time_med": 0.154, "time_perc": 0.069, "time_sum": 50.671, "url": "/api/v2/banner/16028459"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.184, "time_max": 0.84, "time_med": 0.152, "time_perc": 0.068, "time_sum": 49.992, "url": "/api/v2/banner/25398145"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.183, "time_max": 0.686, "time_med": 0.161, "time_perc": 0.068, "time_sum": 49.8, "url": "/api/v2/banner/15521472"}, {"count": 272, "count_perc": 0.272, "time_avg": 0.181, "time_max": 0.821, "time_med": 0.151, "time_perc": 0.067, "time_sum": 49.135, "url": "/api/v2/banner/17708598"}, {"count": 283, "count_perc": 0.283, "time_avg": 0.172, "time_max": 0.281, "time_med": 0.198, "time_perc": 0.067, "time_sum": 48.755, "url": "/accounts/login/"}, {"count": 273, "count_perc": 0.273, "time_avg": 0.177, "time_max": 0.748, "time_med": 0.152, "time_perc": 0.066, "time_sum": 48.331, "url": "/api/v2/banner/16803530"}, {"count": 262, "count_perc": 0.262, "time_avg": 0.184, "time_max": 0.8, "time_med": 0.152, "time_perc": 0.066, "time_sum": 48.08, "url": "/api/v2/banner/24824230"}, {"count": 263, "count_perc": 0.263, "time_avg": 0.182, "time_max": 0.872, "time_med": 0.151, "time_perc": 0.065, "time_sum": 47.767, "url": "/api/v2/banner/1717161"}, {"count": 5, "count_perc": 0.005, "time_avg": 9.498, "time_max": 9.984, "time_med": 9.379, "time_perc": 0.065, "time_sum": 47.489, "url": "/api/1/banners/?campaign=3270941"}, {"count": 1, "count_perc": 0.001, "time_avg": 47.387, "time_max": 47.387, "time_med": 47.387, "time_perc": 0.065, "time_sum": 47.387, "url": "/agency/banners_stats/?date1=28-06-2017&date2=28-06-2017&date_type=day&do=1&rt=advertiser&oi=516&as_json=1"}, {"count": 111, "count_perc": 0.111, "time_avg": 0.418, "time_max": 19.198, "time_med": 0.128, "time_perc": 0.063, "time_sum": 46.445, "url": "/api/1/photogenic_banners/list/?server_name=WIN7RB4"}, {"count": 252, "count_perc": 0.252, "time_avg": 0.182, "time_max": 0.995, "time_med": 0.158, "time_perc": 0.063, "time_sum": 45.77, "url": "/api/v2/banner/227223"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.415, "time_max": 16.887, "time_med": 0.136, "time_perc": 0.062, "time_sum": 45.629, "url": "/api/1/flash_banners/list/?server_name=AndreyEfimovich"}, {"count": 252, "count_perc": 0.252, "time_avg": 0.18, "time_max": 0.747, "time_med": 0.149, "time_perc": 0.062, "time_sum": 45.315, "url": "/api/v2/banner/26350274"}, {"count": 108, "count_perc": 0.108, "time_avg": 0.414, "time_max": 16.281, "time_med": 0.134, "time_perc": 0.061, "time_sum": 44.707, "url": "/api/1/flash_banners/list/?server_name=AndreyVadimovich"}, {"count": 7, "count_perc": 0.007, "time_avg": 6.364, "time_max": 7.105, "time_med": 6.452, "time_perc": 0.061, "time_sum": 44.545, "url": "/api/v2/slot/4246/groups"}, {"count": 30, "count_perc": 0.03, "time_avg": 1.453, "time_max": 1.811, "time_med": 1.454, "time_perc": 0.06, "time_sum": 43.575, "url": "/api/v2/slot/6191/groups"}, {"count": 111, "count_perc": 0.111, "time_avg": 0.364, "time_max": 9.824, "time_med": 0.128, "time_perc": 0.055, "time_sum": 40.431, "url": "/api/1/photogenic_banners/list/?server_name=WIN7RB3"}, {"count": 1, "count_perc": 0.001, "time_avg": 38.24, "time_max": 38.24, "time_med": 38.24, "time_perc": 0.052, "time_sum": 38.24, "url": "/agency/prices/2056/campaigns/bulk_read/"}, {"count": 1, "count_perc": 0.001, "time_avg": 34.547, "time_max": 34.547, "time_med": 34.547, "time_perc": 0.047, "time_sum": 34.547, "url": "/agency/prices/3568/campaigns/bulk_read/"}, {"count": 1, "count_perc": 0.001, "time_avg": 33.525, "time_max": 33.525, "time_med": 33.525, "time_perc": 0.046, "time_sum": 33.525, "url": "/agency/campaigns/6465936/banners/bulk_read/"}, {"count": 94, "count_perc": 0.094, "time_avg": 0.348, "time_max": 1.001, "time_med": 0.364, "time_perc": 0.045, "time_sum": 32.757, "url": "/sites/"}, {"count": 1, "count_perc": 0.001, "time_avg": 32.019, "time_max": 32.019, "time_med": 32.019, "time_perc": 0.044, "time_sum": 32.019, "url": "/api/1/campaigns/?slot=2406"}, {"count": 5, "count_perc": 0.005, "time_avg": 6.109, "time_max": 29.792, "time_med": 0.186, "time_perc": 0.042, "time_sum": 30.544, "url": "/api/1/banners/?campaign=525301"}, {"count": 111, "count_perc": 0.111, "time_avg": 0.273, "time_max": 7.271, "time_med": 0.133, "time_perc": 0.041, "time_sum": 30.357, "url": "/api/1/flash_banners/list/?server_name=AndreyKuzmich"}, {"count": 27, "count_perc": 0.027, "time_avg": 1.094, "time_max": 3.181, "time_med": 1.057, "time_perc": 0.04, "time_sum": 29.531, "url": "/campaigns/7859598/banners/?"}, {"count": 2, "count_perc": 0.002, "time_avg": 14.713, "time_max": 15.205, "time_med": 14.713, "time_perc": 0.04, "time_sum": 29.427, "url": "/api/1/banners/?campaign=341529"}, {"count": 2, "count_perc": 0.002, "time_avg": 14.34, "time_max": 16.078, "time_med": 14.34, "time_perc": 0.039, "time_sum": 28.68, "url": "/api/v2/internal/revenue_share/service/276/partner/505425/statistic/v2?date_from=2017-06-23&date_to=2017-06-29&date_type=day"}, {"count": 8, "count_perc": 0.008, "time_avg": 3.558, "time_max": 3.954, "time_med": 3.547, "time_perc": 0.039, "time_sum": 28.467, "url": "/api/v2/slot/4847/groups"}, {"count": 1, "count_perc": 0.001, "time_avg": 28.436, "time_max": 28.436, "time_med": 28.436, "time_perc": 0.039, "time_sum": 28.436, "url": "/agency/banners_stats/?date1=26-06-2017&date2=28-06-2017&date_type=day&do=1&rt=campaign&oi=5370778&as_json=1"}, {"count": 1, "count_perc": 0.001, "time_avg": 27.762, "time_max": 27.762, "time_med": 27.762, "time_perc": 0.038, "time_sum": 27.762, "url": "/agency/campaigns/5397311/banners/bulk_read/"}, {"count": 111, "count_perc": 0.111, "time_avg": 0.246, "time_max": 7.114, "time_med": 0.134, "time_perc": 0.037, "time_sum": 27.351, "url": "/api/1/flash_banners/list/?server_name=AndreyIlich"}, {"count": 40, "count_perc": 0.04, "time_avg": 0.665, "time_max": 1.957, "time_med": 0.523, "time_perc": 0.036, "time_sum": 26.585, "url": "/api/v2/slot/3382/groups"}, {"count": 110, "count_perc": 0.11, "time_avg": 0.241, "time_max": 9.1, "time_med": 0.135, "time_perc": 0.036, "time_sum": 26.461, "url": "/api/1/flash_banners/list/?server_name=AndreyPetrovich"}, {"count": 27, "count_perc": 0.027, "time_avg": 0.952, "time_max": 2.177, "time_med": 0.992, "time_perc": 0.035, "time_sum": 25.707, "url": "/campaigns/7894087/banners/?"}, {"count": 112, "count_perc": 0.112, "time_avg": 0.226, "time_max": 6.132, "time_med": 0.129, "time_perc": 0.035, "time_sum": 25.343, "url": "/api/1/photogenic_banners/list/?server_name=WIN7RB5"}, {"count": 1, "count_perc": 0.001, "time_avg": 25.091, "time_max": 25.091, "time_med": 25.091, "time_perc": 0.034, "time_sum": 25.091, "url": "/agency/banners_stats/?date1=26-06-2017&date2=28-06-2017&date_type=day&do=1&rt=campaign&oi=5370398&as_json=1"}, {"count": 1, "count_perc": 0.001, "time_avg": 25.086, "time_max": 25.086, "time_med": 25.086, "time_perc": 0.034, "time_sum": 25.086, "url": "/agency/banners_stats/?date1=26-06-2017&date2=28-06-2017&date_type=day&do=1&rt=campaign&oi=5377629&as_json=1"}, {"count": 2, "count_perc": 0.002, "time_avg": 12.509, "time_max": 13.255, "time_med": 12.509, "time_perc": 0.034, "time_sum": 25.019, "url": "/campaigns/7339106/banners/"}, {"count": 7860, "count_perc": 7.86, "time_avg": 0.003, "time_max": 0.223, "time_med": 0.003, "time_perc": 0.034, "time_sum": 24.665, "url": "/export/appinstall_raw/2017-06-29/"}, {"count": 27, "count_perc": 0.027, "time_avg": 0.902, "time_max": 2.593, "time_med": 0.844, "time_perc": 0.033, "time_sum": 24.351, "url": "/campaigns/7859612/banners/?"}, {"count": 1, "count_perc": 0.001, "time_avg": 23.321, "time_max": 23.321, "time_med": 23.321, "time_perc": 0.032, "time_sum": 23.321, "url": "/agency/campaigns/6458019/banners/bulk_read/"}, {"count": 2, "count_perc": 0.002, "time_avg": 11.6, "time_max": 23.053, "time_med": 11.6, "time_perc": 0.032, "time_sum": 23.199, "url": "/api/1/campaigns/?id=472768"}, {"count": 1, "count_perc": 0.001, "time_avg": 23.123, "time_max": 23.123, "time_med": 23.123, "time_perc": 0.032, "time_sum": 23.123, "url": "/agency/campaigns/5397275/banners/bulk_read/"}, {"count": 40, "count_perc": 0.04, "time_avg": 0.576, "time_max": 0.85, "time_med": 0.567, "time_perc": 0.031, "time_sum": 23.058, "url": "/api/v2/group/405405/banners"}, {"count": 27, "count_perc": 0.027, "time_avg": 0.849, "time_max": 2.189, "time_med": 0.841, "time_perc": 0.031, "time_sum": 22.911, "url": "/campaigns/7854380/banners/?"}, {"count": 1, "count_perc": 0.001, "time_avg": 22.847, "time_max": 22.847, "time_med": 22.847, "time_perc": 0.031, "time_sum": 22.847, "url": "/agency/campaigns/6400322/banners/bulk_read/"}, {"count": 1, "count_perc": 0.001, "time_avg": 22.587, "time_max": 22.587, "time_med": 22.587, "time_perc": 0.031, "time_sum": 22.587, "url": "/agency/campaigns/6403181/banners/bulk_read/"}];
+    var reportDates;
+    var columns = new Array();
+    var lastRow = 150;
+    var $table = $(".report-table-body");
+    var $header = $(".report-table-header-row");
+    var $selector = $(".report-date-selector");
+
+    $(document).ready(function() {
+      $(window).bind("scroll", bindScroll);
+        var row = table[0];
+        for (k in row) {
+          columns.push(k);
+        }
+        columns = columns.sort();
+        columns = columns.slice(columns.length -1, columns.length).concat(columns.slice(0, columns.length -1));
+        drawColumns();
+        drawRows(table.slice(0, lastRow));
+        $(".report-table").tablesorter(); 
+    });
+
+    function drawColumns() {
+      for (var i = 0; i < columns.length; i++) {
+        var $th = $("<th></th>").text(columns[i])
+                                .addClass("report-table-header-cell")
+        $header.append($th);
+      }
+    }
+
+    function drawRows(rows) {
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var $row = $("<tr></tr>").addClass("report-table-body-row");
+        for (var j = 0; j < columns.length; j++) {
+          var columnName = columns[j];
+          var $cell = $("<td></td>").addClass("report-table-body-cell");
+          if (columnName == "url") {
+            var url = "https://rb.mail.ru" + row[columnName];
+            var $link = $("<a></a>").attr("href", url)
+                                    .attr("title", url)
+                                    .attr("target", "_blank")
+                                    .addClass("clipped")
+                                    .addClass("url")
+                                    .text(row[columnName]);
+            $cell.addClass("report-table-body-cell-url");
+            $cell.append($link);
+          }
+          else {
+            $cell.text(row[columnName]);
+            if (columnName == "time_avg" && row[columnName] > 0.9) {
+              $cell.addClass("alert");
+            }
+          }
+          $row.append($cell);
+        }
+        $table.append($row);
+      }
+      $(".report-table").trigger("update"); 
+    }
+
+    function bindScroll() {
+      if($(window).scrollTop() == $(document).height() - $(window).height()) {
+        if (lastRow < 1000) {
+          drawRows(table.slice(lastRow, lastRow + 50));
+          lastRow += 50;
+        }
+      }
+    }
+
+  }(window.jQuery)
+  </script>
+</body>
+</html>
