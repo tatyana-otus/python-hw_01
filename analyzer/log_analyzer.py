@@ -22,8 +22,8 @@ import configparser
 
 config = {
     "REPORT_SIZE": 1000,
-    "REPORT_DIR": "./reports",
-    "LOG_DIR": "./log",
+    "REPORT_DIR": ".",
+    "LOG_DIR": ".",
     "LOG_FILE": None
 }
 
@@ -132,12 +132,12 @@ def calculate_stat(raw_report, urls_count, times_count, report_size):
         count_perc = line[3]/urls_count * 100.0
 
         report_for_save.append({"url": url,
-                                "count": round(count,      precision),
-                                "time_sum": round(time_sum,   precision),
-                                "time_avg": round(time_avg,   precision),
-                                "time_med": round(time_med,   precision),
-                                "time_max": round(time_max,   precision),
-                                "time_perc": round(time_perc,  precision),
+                                "count": round(count, precision),
+                                "time_sum": round(time_sum, precision),
+                                "time_avg": round(time_avg,  precision),
+                                "time_med": round(time_med, precision),
+                                "time_max": round(time_max, precision),
+                                "time_perc": round(time_perc, precision),
                                 "count_perc": round(count_perc, precision)
                                 })
 
@@ -163,7 +163,10 @@ def save_as_json(file_path, report, sample_report='report.html'):
 
 def process_record(rec):
         """
-        Parses single string record from log-file
+        Parses single string record from log-file,
+        returns URL, request_time and
+        0 - if parsing OK
+        1 - if parsing ERROR
         """
 
         result = re.match(r"\S+\s+"        # $remote_addr
@@ -182,7 +185,7 @@ def process_record(rec):
                           rec)
         url = ""
         if result:
-            request = re.match(r"\"\S+\s+(.*)\s+\S+\"", result.group(1))           
+            request = re.match(r"\"\S+\s+(.*)\s+\S+\"", result.group(1))
             if request:
                 url = request.group(1)
             return (url, result.group(2), 0)
@@ -237,9 +240,9 @@ def is_valid_cfg_options(cfg):
 
 def setup_logging(file_path, log_level):
     """
-    Logging configuration setup 
+    Logging configuration setup
     """
-    
+
     logging.basicConfig(level=log_level,
                         format='[%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S',
@@ -260,9 +263,9 @@ def process(log_path, report_size):
     error_perc = 1
     if urls_count:
         error_perc = error_count/urls_count
- 
+
     report = []
-    if raw_report:  
+    if raw_report:
         report = calculate_stat(raw_report, urls_count, times_count, report_size)
 
     return report, error_perc

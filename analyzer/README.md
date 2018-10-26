@@ -30,8 +30,10 @@
 * `time_med` ‐ медиана `$request_time` для данного URL'а
 ## Пример использования
 ```
-python3 ./log_analyzer.py [--config ./analyzer.cfg]
+python3 ./log_analyzer.py [--config ./path_to_config/some_analyzer.cfg]
 ```
+Если опция --config не указана, используется файл `analyzer.cfg` из текущей директории
+
 ### Пример файла `analyzer.cfg`
 ```
 [Common]
@@ -42,11 +44,17 @@ REPORT_DIR: .
 [Log]
 LOG_FILE:log_analyzer.log
 ```
+Файл `*.cfg` переопределяет дефолтные значения.
+
+### Дефолтные значения конфигурации
+```
+[Common]
+REPORT_SIZE: 1000,
+REPORT_DIR: .
+LOG_DIR: .
+```
+По умолчанию лог пишется stdout, если не указано иное в фале конфигурации: в секции `[Log]` значение `LOG_FILE`
 ## Тестирование:
 ```
 python3 ./test_log_analyzer.py
 ```
-
-
-
-
