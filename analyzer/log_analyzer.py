@@ -58,8 +58,8 @@ def get_last_log(log_dir):
 
 def gen_record(path):
     """
-    Generates valid URL and request_time if 'error'== 0
-    from 'path'
+    Generates valid URL and request_time from 'path'
+    if 'error'== 0
     """
     assert(path.endswith('.gz') or path.endswith('.log'))
 
@@ -87,7 +87,6 @@ def get_raw_stat(file_path):
         error_count += error
         if url:
             urls_count += 1
-            error_count += error
             times_count += float(time)
             if url in report:
                 report[url].append(float(time))
@@ -164,7 +163,7 @@ def save_as_json(file_path, report, sample_report='report.html'):
 def process_record(rec):
         """
         Parses single string record from log-file,
-        returns URL, request_time and
+        returns URL, request_time and error:
         0 - if parsing OK
         1 - if parsing ERROR
         """
