@@ -28,6 +28,44 @@
 # -----------------
 
 
+from itertools import combinations
+from itertools import groupby
+from itertools import islice
+from itertools import chain
+from itertools import count
+
+
+map_rank = dict(zip(islice('A23456789TJQK', 13), islice(count(1), 13)))
+
+
+def gen_cards(hand, color):
+    """Генерирует 'руки', заменяя джокер соответствующего цвета допустимыми картами
+    отсутствующими в наборе 'hand'"""
+    assert(color == 'B' or color == 'R')
+    suit = {'B': 'CS', 'R': 'HD'}
+
+    for i in islice('A23456789TJQK', 13):
+        card = i+suit[color][0]
+        if card not in hand:
+            yield list(chain(hand, [card]))
+
+    for i in islice('A23456789TJQK', 13):
+        card = i+suit[color][1]
+        if card not in hand:
+            yield list(chain(hand, [card]))
+
+
+def replace_joker(hands, color):
+    """Заменяет джокер и возвращает соответствующий набор 'рук'"""
+    joker = '?'+color
+    new_hand = []
+    for hand in hands:
+        if joker in hand:
+            rm_joker = [h for h in hand if joker not in h]
+            new_hand.extend([h for h in gen_cards(rm_joker, color)])
+    return new_hand
+
+
 def hand_rank(hand):
     """Возвращает значение определяющее ранг 'руки'"""
     ranks = card_ranks(hand)
@@ -54,40 +92,65 @@ def hand_rank(hand):
 def card_ranks(hand):
     """Возвращает список рангов (его числовой эквивалент),
     отсортированный от большего к меньшему"""
-    return
+    return sorted([map_rank[card[0]] for card in hand], reverse=True)
 
 
 def flush(hand):
     """Возвращает True, если все карты одной масти"""
-    return
+    first_suit = hand[0][1]
+    for card in hand:
+        if first_suit != card[1]:
+            return False
+    return True
 
 
 def straight(ranks):
     """Возвращает True, если отсортированные ранги формируют последовательность 5ти,
     где у 5ти карт ранги идут по порядку (стрит)"""
-    return
+    for pair in zip(ranks, ranks[1:]):
+        if pair[0] - pair[1] != 1:
+            return False
+    return True
 
 
 def kind(n, ranks):
     """Возвращает первый ранг, который n раз встречается в данной руке.
     Возвращает None, если ничего не найдено"""
-    return
+    for key, group in groupby(ranks):
+        if len(list(group)) == n:
+            return key
+    return None
 
 
 def two_pair(ranks):
     """Если есть две пары, то возврщает два соответствующих ранга,
     иначе возвращает None"""
-    return
+    pairs = [key for key, group in groupby(ranks) if len(list(group)) >= 2]
+    if len(pairs) >= 2:
+        return pairs
+    else:
+        return None
 
 
 def best_hand(hand):
     """Из "руки" в 7 карт возвращает лучшую "руку" в 5 карт """
-    return
+    return max(list(combinations(hand, 5)), key=hand_rank)
 
 
 def best_wild_hand(hand):
     """best_hand но с джокерами"""
-    return
+    joker_hands = [h for h in list(combinations(hand, 5)) if '?B' in h or '?R' in h]
+    regular_hands = [h for h in list(combinations(hand, 5)) if '?B' not in h and '?R' not in h]
+
+    joker_hands = replace_joker(joker_hands, 'B')
+
+    regular_hands.extend([h for h in joker_hands if '?R' not in h])
+    joker_hands = [h for h in joker_hands if '?R' in h]
+
+    joker_hands = replace_joker(joker_hands, 'R')
+
+    regular_hands.extend(joker_hands)
+    return max(regular_hands, key=hand_rank)
 
 
 def test_best_hand():
