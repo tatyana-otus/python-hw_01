@@ -59,7 +59,7 @@ def n_ary(func):
     Given binary function f(x, y), return an n_ary function such
     that f(x, y, z) = f(x, f(y,z)), etc. Also allow f(x) = x.
     '''
-    def wrapper(first, second, *args, **kwargs):
+    def wrapper(first, second, *args):
         if not args:
             result = func(first, second)
         else:
@@ -90,13 +90,14 @@ def trace(prefix):
 
     '''
     def wrap(func):
-        def wrapper(*args, **kwargs):
-            print prefix*wrapper.count, "-->", func.__name__+'('+str(*args)+')'
+        def wrapper(*args):
+            print "{}-->{}({})".format(prefix*wrapper.count, func.__name__,
+                                       ','.join(str(arg) for arg in args))
             wrapper.count += 1
-            result = func(*args, **kwargs)
+            result = func(*args)
             wrapper.count -= 1
-            print prefix*wrapper.count, "<--", func.__name__+'('+str(*args)+')',\
-                "==", result
+            print "{}-->{}({}) == {}".format(prefix*wrapper.count, func.__name__,
+                                             ','.join(str(arg) for arg in args), result)
             update_wrapper(wrapper, func)
             return result
         wrapper.count = 0
