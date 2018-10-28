@@ -4,7 +4,7 @@
 from functools import update_wrapper
 
 
-def disable():
+def disable(func):
     '''
     Disable a decorator by re-assigning the decorator's name
     to this function. For example, to turn off memoization:
@@ -12,7 +12,8 @@ def disable():
     >>> memo = disable
 
     '''
-    return
+    update_wrapper(disable, func)
+    return func
 
 
 def decorator():
@@ -23,28 +24,52 @@ def decorator():
     return
 
 
-def countcalls():
+def countcalls(func):
     '''Decorator that counts calls made to the function decorated.'''
-    return
+    def wrapper(*args, **kwargs):
+        wrapper.calls += 1
+        result = func(*args, **kwargs)
+        update_wrapper(wrapper, func)
+        return result
+    wrapper.calls = 0
+    return update_wrapper(wrapper, func)
 
 
-def memo():
+def memo(func):
     '''
     Memoize a function so that it caches all return values for
     faster future lookups.
     '''
-    return
+    cache = func.cache = {}
+
+    def wrapper(*args, **kwargs):
+        key = str(args) + str(kwargs)
+        if key not in cache:
+            result = func(*args, **kwargs)
+            cache[key] = result
+        else:
+            result = cache[key]
+        update_wrapper(wrapper, func)
+        return result
+    return update_wrapper(wrapper, func)
 
 
-def n_ary():
+def n_ary(func):
     '''
     Given binary function f(x, y), return an n_ary function such
     that f(x, y, z) = f(x, f(y,z)), etc. Also allow f(x) = x.
     '''
-    return
+    def wrapper(first, second, *args, **kwargs):
+        if not args:
+            result = func(first, second)
+        else:
+            result = func(first, wrapper(second, *args))
+        update_wrapper(wrapper, func)
+        return result
+    return update_wrapper(wrapper, func)
 
 
-def trace():
+def trace(prefix):
     '''Trace calls made to function decorated.
 
     @trace("____")
@@ -64,7 +89,21 @@ def trace():
      <-- fib(3) == 3
 
     '''
-    return
+    def wrap(func):
+        def wrapper(*args, **kwargs):
+            print prefix*wrapper.count, "-->", func.__name__+'('+str(*args)+')'
+            wrapper.count += 1
+            result = func(*args, **kwargs)
+            wrapper.count -= 1
+            print prefix*wrapper.count, "<--", func.__name__+'('+str(*args)+')',\
+                "==", result
+            update_wrapper(wrapper, func)
+            return result
+        wrapper.count = 0
+        return update_wrapper(wrapper, func)
+    return wrap
+
+# memo = disable
 
 
 @memo
