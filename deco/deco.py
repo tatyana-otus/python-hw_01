@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import update_wrapper
-
+from functools import wraps
 
 def disable(func):
     '''
@@ -12,27 +12,29 @@ def disable(func):
     >>> memo = disable
 
     '''
-    update_wrapper(disable, func)
     return func
 
 
-def decorator():
+def decorator(inner_func):
     '''
     Decorate a decorator so that it inherits the docstrings
     and stuff from the function it's decorating.
     '''
-    return
+    def wrap(func):
+        return update_wrapper(func, inner_func)
+    return wrap
 
 
 def countcalls(func):
-    '''Decorator that counts calls made to the function decorated.'''
+    '''Decorator that counts calls made to the function decorated.'''   
+    @decorator(func)
     def wrapper(*args, **kwargs):
         wrapper.calls += 1
         result = func(*args, **kwargs)
         update_wrapper(wrapper, func)
         return result
     wrapper.calls = 0
-    return update_wrapper(wrapper, func)
+    return wrapper
 
 
 def memo(func):
@@ -42,6 +44,7 @@ def memo(func):
     '''
     cache = func.cache = {}
 
+    @decorator(func)
     def wrapper(*args, **kwargs):
         key = str(args) + str(kwargs)
         if key not in cache:
@@ -51,7 +54,7 @@ def memo(func):
             result = cache[key]
         update_wrapper(wrapper, func)
         return result
-    return update_wrapper(wrapper, func)
+    return wrapper
 
 
 def n_ary(func):
@@ -59,6 +62,7 @@ def n_ary(func):
     Given binary function f(x, y), return an n_ary function such
     that f(x, y, z) = f(x, f(y,z)), etc. Also allow f(x) = x.
     '''
+    @decorator(func)
     def wrapper(first, second, *args):
         if not args:
             result = func(first, second)
@@ -66,7 +70,7 @@ def n_ary(func):
             result = func(first, wrapper(second, *args))
         update_wrapper(wrapper, func)
         return result
-    return update_wrapper(wrapper, func)
+    return wrapper
 
 
 def trace(prefix):
@@ -90,6 +94,7 @@ def trace(prefix):
 
     '''
     def wrap(func):
+        @decorator(func)
         def wrapper(*args):
             print "{}-->{}({})".format(prefix*wrapper.count, func.__name__,
                                        ','.join(str(arg) for arg in args))
@@ -101,7 +106,7 @@ def trace(prefix):
             update_wrapper(wrapper, func)
             return result
         wrapper.count = 0
-        return update_wrapper(wrapper, func)
+        return wrapper
     return wrap
 
 # memo = disable
