@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import update_wrapper
-from functools import wraps
+
 
 def disable(func):
     '''
@@ -26,7 +26,7 @@ def decorator(inner_func):
 
 
 def countcalls(func):
-    '''Decorator that counts calls made to the function decorated.'''   
+    '''Decorator that counts calls made to the function decorated.'''
     @decorator(func)
     def wrapper(*args, **kwargs):
         wrapper.calls += 1
