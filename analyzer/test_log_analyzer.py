@@ -5,6 +5,7 @@ import configparser
 import shutil
 import sys
 import filecmp
+import logging
 
 
 class ConfigFileTest(unittest.TestCase):
@@ -14,7 +15,8 @@ class ConfigFileTest(unittest.TestCase):
                     "LOG_DIR: ./test/log\n"\
                     "REPORT_DIR: ./test/report\n\n"\
                     "[Log]\n"\
-                    "LOG_FILE:log_analyzer.log"
+                    "LOG_FILE:log_analyzer.log\n"\
+                    "LOG_LEVEL:DEBUG"
 
     good_config_1 = "[Common]\n"\
                     "REPORT_SIZE: 987654321"
@@ -36,27 +38,29 @@ class ConfigFileTest(unittest.TestCase):
 
     def test_no_config_file(self):
         with self.assertRaises(FileNotFoundError):
-            la.get_cfg(['--config', 'nonexistent_file.cfg'])
+            la.get_cfg('nonexistent_file.cfg')
 
     def test_good_config_files(self):
         def_cfg = la.config.copy()
         with open('good_cfg_file.cfg', 'wt') as f:
             f.write(self.good_config_1)
-        new_config = la.get_cfg(['--config', 'good_cfg_file.cfg'])
+        new_config = la.get_cfg('good_cfg_file.cfg')
         self.assertEqual(new_config, {"REPORT_SIZE": 987654321,
                                       "REPORT_DIR": def_cfg["REPORT_DIR"],
                                       "LOG_DIR": def_cfg["LOG_DIR"],
-                                      "LOG_FILE": def_cfg["LOG_FILE"]
+                                      "LOG_FILE": def_cfg["LOG_FILE"],
+                                      "LOG_LEVEL": def_cfg["LOG_LEVEL"]
                                       })
         os.remove("good_cfg_file.cfg")
 
         with open('good_cfg_file.cfg', 'wt') as f:
             f.write(self.good_config_2)
-        new_config = la.get_cfg(['--config', 'good_cfg_file.cfg'])
+        new_config = la.get_cfg('good_cfg_file.cfg')
         self.assertEqual(new_config, {"REPORT_SIZE": 50,
                                       "REPORT_DIR": "./test/report",
                                       "LOG_DIR": "./test/log",
-                                      "LOG_FILE": "log_analyzer.log"
+                                      "LOG_FILE": "log_analyzer.log",
+                                      "LOG_LEVEL": 'DEBUG'
                                       })
         os.remove("good_cfg_file.cfg")
 
@@ -64,13 +68,13 @@ class ConfigFileTest(unittest.TestCase):
         with open('bad_config_file.cfg', 'wt') as f:
             f.write(self.bad_config_1)
         with self.assertRaises(ValueError):
-            la.get_cfg(['--config', 'bad_config_file.cfg'])
+            la.get_cfg('bad_config_file.cfg')
         os.remove("bad_config_file.cfg")
 
         with open('bad_config_file.cfg', 'wt') as f:
             f.write(self.bad_config_2)
         with self.assertRaises(configparser.ParsingError):
-            la.get_cfg(['--config', 'bad_config_file.cfg'])
+            la.get_cfg('bad_config_file.cfg')
         os.remove("bad_config_file.cfg")
 
 
@@ -153,26 +157,34 @@ class ReportGenerationTest(unittest.TestCase):
 class LogAnalizerMainTest(unittest.TestCase):
 
     def test_plain_log(self):
-        shutil.rmtree("./test_data/test_reports", ignore_errors=True, onerror=None)
+        shutil.rmtree("./test_data/test_reports",
+                      ignore_errors=True, onerror=None)
         os.mkdir("./test_data/test_reports")
 
         la.main(['log_analyzer.py', '--config', './test_data/test.cfg'])
 
-        self.assertTrue(filecmp.cmp('./test_data/test_reports/report-20181024.html',
-                                    './test_data/report-20181024.html'))
+        self.assertTrue(filecmp.cmp(
+                        './test_data/test_reports/report-20181024.html',
+                        './test_data/report-20181024.html')
+                        )
 
-        shutil.rmtree("./test_data/test_reports", ignore_errors=True, onerror=None)
+        shutil.rmtree("./test_data/test_reports",
+                      ignore_errors=True, onerror=None)
 
     def test_gz_log(self):
-        shutil.rmtree("./test_data/test_reports", ignore_errors=True, onerror=None)
+        shutil.rmtree("./test_data/test_reports",
+                      ignore_errors=True, onerror=None)
         os.mkdir("./test_data/test_reports")
 
         la.main(['log_analyzer.py', '--config', './test_data/test_gz.cfg'])
 
-        self.assertTrue(filecmp.cmp('./test_data/test_reports/report-20181024.html',
-                                    './test_data/report-20181024.html'))
+        self.assertTrue(filecmp.cmp(
+                       './test_data/test_reports/report-20181024.html',
+                       './test_data/report-20181024.html')
+                        )
 
-        shutil.rmtree("./test_data/test_reports", ignore_errors=True, onerror=None)
+        shutil.rmtree("./test_data/test_reports",
+                      ignore_errors=True, onerror=None)
 
 
 if __name__ == '__main__':

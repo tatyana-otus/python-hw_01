@@ -19,18 +19,24 @@ import getopt
 import traceback
 import logging
 import configparser
+import argparse
+from collections import namedtuple
 
 config = {
     "REPORT_SIZE": 1000,
     "REPORT_DIR": ".",
     "LOG_DIR": ".",
-    "LOG_FILE": None
+    "LOG_FILE": None,
+    'LOG_LEVEL': 'ERROR'
 }
 
-LOG_LEVEL = logging.INFO
 DEFAULT_CFG_PATH = "./analyzer.cfg"
 
 LOG_FILE_NAME_PATTERN = r"nginx-access-ui\.log-(\d{8})\.(log|gz)$"
+
+
+LogFile = namedtuple('LogFile', 'name date')
+ReportStat = namedtuple('ReportStat', 'urls times errors report')
 
 
 def get_last_log(log_dir):
@@ -38,22 +44,23 @@ def get_last_log(log_dir):
     Returns the last file name compared by date
     from 'log_dir' directory and matched date
     """
-
+    assert(os.path.isdir(log_dir))
     logging.info("Geting last log file from: {}".format(log_dir))
 
     file_name = ""
     date = 0
     date_str = ""
-    for cur_dir, subdirs, files in os.walk(log_dir):
-        for file in files:
-            result = re.match(LOG_FILE_NAME_PATTERN, file)
-            if result:
-                if date < int(result.group(1)):
-                    file_name = file
-                    date_str = result.group(1)
-                    date = int(result.group(1))
 
-    return file_name, date_str
+    for file in (f for f in os.listdir(log_dir) if
+                 f.endswith('.gz') or f.endswith('.log')):
+        result = re.match(LOG_FILE_NAME_PATTERN, file)
+        if result:
+            if date < int(result.group(1)):
+                file_name = file
+                date_str = result.group(1)
+                date = int(result.group(1))
+
+    return LogFile(file_name, date_str)
 
 
 def gen_record(path):
@@ -63,12 +70,14 @@ def gen_record(path):
     """
     assert(path.endswith('.gz') or path.endswith('.log'))
 
-    is_gz = path.endswith('.gz')
-
-    with gzip.open(path, 'rt', encoding='ascii') if is_gz else open(path, 'rt', encoding='ascii') as log:
-        for line in log:
+    if path.endswith('.gz'):
+        log = gzip.open(path, 'rt', encoding='utf-8')
+    else:
+        log = open(path, 'rt', encoding='utf-8')
+    for line in log:
             url, time, error = process_record(line.strip())
             yield url, time, error
+    log.close()
 
 
 def get_raw_stat(file_path):
@@ -93,10 +102,10 @@ def get_raw_stat(file_path):
             else:
                 report[url] = [float(time)]
 
-    return urls_count, times_count, error_count, report
+    return ReportStat(urls_count, times_count, error_count, report)
 
 
-def calculate_stat(raw_report, urls_count, times_count, report_size):
+def calculate_stat(report_stat, report_size):
     """
     Calculating statistics:
     time_sum
@@ -105,41 +114,37 @@ def calculate_stat(raw_report, urls_count, times_count, report_size):
     time_med for each url in 'raw_report'
     """
 
+    UrlStat = namedtuple('UrlStat', 'time_sum time_med time_max count url')
+
     logging.info("Calculating statistics ...")
 
     precision = 3
     full_report = []
-    for url, times in raw_report.items():
-        full_report.append((sum(times),
-                            statistics.median(times),
-                            max(times),
-                            len(times),
-                            url
-                            ))
+    for url, times in report_stat.report.items():
+        full_report.append(UrlStat(sum(times),
+                           statistics.median(times),
+                           max(times),
+                           len(times),
+                           url
+                           ))
 
     full_report = sorted(full_report, key=lambda kv: kv[0], reverse=True)
 
     report_for_save = []
     for line in itertools.islice(full_report, 0, report_size):
-        url = line[4]
-        count = line[3]
-        time_sum = line[0]
-        time_avg = line[0]/count
-        time_med = line[1]
-        time_max = line[2]
-        time_perc = line[0]/times_count * 100.0
-        count_perc = line[3]/urls_count * 100.0
+        time_avg = line.time_sum/line.count
+        time_perc = line.time_sum/report_stat.times * 100.0
+        count_perc = line.count/report_stat.urls * 100.0
 
-        report_for_save.append({"url": url,
-                                "count": round(count, precision),
-                                "time_sum": round(time_sum, precision),
+        report_for_save.append({"url": line.url,
+                                "count": round(line.count, precision),
+                                "time_sum": round(line.time_sum, precision),
                                 "time_avg": round(time_avg,  precision),
-                                "time_med": round(time_med, precision),
-                                "time_max": round(time_max, precision),
+                                "time_med": round(line.time_med, precision),
+                                "time_max": round(line.time_max, precision),
                                 "time_perc": round(time_perc, precision),
                                 "count_perc": round(count_perc, precision)
                                 })
-
     return report_for_save
 
 
@@ -152,10 +157,12 @@ def save_as_json(file_path, report, sample_report='report.html'):
     try:
         with open(sample_report, 'rt') as html_report:
             s = Template(html_report.read())
-            with open(file_path, 'wt', encoding='ascii') as report_file:
-                report_file.write(s.safe_substitute(table_json=json.dumps(report, sort_keys=True)))
+            with open(file_path, 'wt', encoding='utf-8') as f_report:
+                f_report.write(s.safe_substitute(table_json=json.dumps(report,
+                               sort_keys=True)))
     except Exception as e:
-        raise
+        logging.error('Saving report Error')
+        raise e
 
     logging.info("Report "+file_path+" saved.")
 
@@ -193,26 +200,32 @@ def process_record(rec):
             return (url, 0, 1)
 
 
-def get_cfg(argv):
+def parse_cfg_opt(argv):
+    """
+    Getting the config file path
+    """
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default=DEFAULT_CFG_PATH,
+                        nargs='?', dest='cfg_file',
+                        help='')
+
+    args = parser.parse_args(argv)
+    return args.cfg_file
+
+
+def get_cfg(file_path):
     """
     Config options setup
     """
-
     cfg = config.copy()
-    file_path = DEFAULT_CFG_PATH
-    try:
-        opts, args = getopt.getopt(argv, "", ["config="])
-    except getopt.GetoptError:
-        pass
-    for opt, arg in opts:
-        if opt == '--config':
-            file_path = arg
 
-    with open(file_path, 'rt') as f:
-        pass
+    if not os.path.isfile(file_path):
+        logging.error('Wrong file or file path: {}'.format(file_path))
+        raise FileNotFoundError("Config file not found")
 
     file_cfg = configparser.ConfigParser()
-    file_cfg.read(file_path, encoding='ascii')
+    file_cfg.read(file_path, encoding='utf-8')
     cfg["LOG_DIR"] = file_cfg.get("Common",
                                   "LOG_DIR",
                                   fallback=cfg["LOG_DIR"])
@@ -222,7 +235,10 @@ def get_cfg(argv):
     cfg["REPORT_SIZE"] = int(file_cfg.get("Common",
                                           "REPORT_SIZE",
                                           fallback=cfg["REPORT_SIZE"]))
-    cfg["LOG_FILE"] = file_cfg.get("Log", "LOG_FILE", fallback=None)
+    cfg["LOG_FILE"] = file_cfg.get("Log", "LOG_FILE",
+                                   fallback=cfg["LOG_FILE"])
+    cfg["LOG_LEVEL"] = file_cfg.get("Log", "LOG_LEVEL",
+                                    fallback=cfg["LOG_LEVEL"])
 
     return cfg
 
@@ -241,8 +257,13 @@ def setup_logging(file_path, log_level):
     """
     Logging configuration setup
     """
+    level = {'INFO': logging.INFO,
+             'ERROR': logging.ERROR,
+             'DEBUG': logging.DEBUG}
+    if log_level not in ['INFO', 'ERROR', 'DEBUG']:
+        raise ValueError('Wrong LOG_LEVEL')
 
-    logging.basicConfig(level=log_level,
+    logging.basicConfig(level=level[log_level],
                         format='[%(asctime)s] %(levelname).1s %(message)s',
                         datefmt='%Y.%m.%d %H:%M:%S',
                         filename=file_path,
@@ -255,17 +276,19 @@ def process(log_path, report_size):
     """
 
     logging.info("Process: {}".format(log_path))
-    urls_count, times_count, error_count, raw_report = get_raw_stat(log_path)
+    report_stat = get_raw_stat(log_path)
 
-    logging.info("urls = {} errors = {}".format(urls_count, error_count))
+    logging.info("urls = {} errors = {}".format(report_stat.urls,
+                                                report_stat.errors))
 
     error_perc = 1
-    if urls_count:
-        error_perc = error_count/urls_count
+    if report_stat.urls:
+        error_perc = report_stat.errors/report_stat.urls
 
     report = []
-    if raw_report:
-        report = calculate_stat(raw_report, urls_count, times_count, report_size)
+    if report_stat.report:
+        report = calculate_stat(report_stat,
+                                report_size)
 
     return report, error_perc
 
@@ -273,48 +296,46 @@ def process(log_path, report_size):
 def main(argv=sys.argv):
 
     try:
-        cfg = get_cfg(argv[1:])
-        setup_logging(cfg["LOG_FILE"], LOG_LEVEL)
+        cfg_path = parse_cfg_opt(argv[1:])
+
+        cfg = get_cfg(cfg_path)
+        setup_logging(cfg["LOG_FILE"], cfg["LOG_LEVEL"])
 
     except (FileNotFoundError, configparser.ParsingError, ValueError) as e:
-        print("Exit with error: {}".format(e))
-        sys.exit(2)
+        logging.error('Config error ')
+        raise e
 
-    try:
-        if is_valid_cfg_options(cfg):
-            log_file, date = get_last_log(cfg["LOG_DIR"])
+    if not is_valid_cfg_options(cfg):
+        logging.error('Invalid config: '+str(cfg))
+        return
+    log_des = get_last_log(cfg["LOG_DIR"])
 
-            report_path = cfg["REPORT_DIR"]+'/'+"report-"+date+".html"
-            log_path = cfg["LOG_DIR"]+'/'+log_file
+    report_path = os.path.join(cfg["REPORT_DIR"],
+                               "report-"+log_des.date+".html")
+    log_path = os.path.join(cfg["LOG_DIR"], log_des.name)
 
-            is_need_process = (os.path.isfile(log_path) and
-                               not os.path.isfile(report_path))
-
-            if is_need_process:
-                report, error_perc = process(log_path, cfg["REPORT_SIZE"])
-                if error_perc > 1:
-                    logging.error("Errors: {}%".format(error_perc))
-                    return
-                else:
-                    save_as_json(report_path, report)
-            else:
-                logging.info("No log-files to process")
-                return
-
-        else:
-            logging.error('Invalid config: '+str(cfg))
-
-    except KeyboardInterrupt:
-        logging.error(traceback.format_exc())
-        logging.error("Exit with KeyboardInterrupt")
-        sys.exit(2)
-
-    except Exception as e:
-        logging.exception(traceback.format_exc())
-        logging.error("Exit with error: {}".format(e))
-        sys.exit(2)
+    is_need_process = (os.path.isfile(log_path) and
+                       not os.path.isfile(report_path))
+    if not is_need_process:
+        logging.info("No log-files to process")
+        return
+    report, error_perc = process(log_path, cfg["REPORT_SIZE"])
+    if error_perc > 1:
+        logging.error("Errors: {}%".format(error_perc))
+        return
+    else:
+        save_as_json(report_path, report)
 
 
 if __name__ == "__main__":
 
-    main()
+    try:
+        main()
+
+    except KeyboardInterrupt:
+        logging.error(traceback.format_exc())
+        logging.error("Exit with KeyboardInterrupt")
+
+    except Exception as e:
+        logging.exception(traceback.format_exc())
+        logging.error("Exit with error: {}".format(e))
