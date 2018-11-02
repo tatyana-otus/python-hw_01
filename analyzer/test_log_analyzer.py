@@ -13,7 +13,8 @@ class ConfigFileTest(unittest.TestCase):
     good_config_2 = "[Common]\n"\
                     "REPORT_SIZE: 50\n"\
                     "LOG_DIR: ./test/log\n"\
-                    "REPORT_DIR: ./test/report\n\n"\
+                    "REPORT_DIR: ./test/report\n"\
+                    "ERROR_LIMIT: 0.5\n\n"\
                     "[Log]\n"\
                     "LOG_FILE:log_analyzer.log\n"\
                     "LOG_LEVEL:DEBUG"
@@ -49,7 +50,8 @@ class ConfigFileTest(unittest.TestCase):
                                       "REPORT_DIR": def_cfg["REPORT_DIR"],
                                       "LOG_DIR": def_cfg["LOG_DIR"],
                                       "LOG_FILE": def_cfg["LOG_FILE"],
-                                      "LOG_LEVEL": def_cfg["LOG_LEVEL"]
+                                      "LOG_LEVEL": def_cfg["LOG_LEVEL"],
+                                      "ERROR_LIMIT": def_cfg["ERROR_LIMIT"]
                                       })
         os.remove("good_cfg_file.cfg")
 
@@ -60,7 +62,8 @@ class ConfigFileTest(unittest.TestCase):
                                       "REPORT_DIR": "./test/report",
                                       "LOG_DIR": "./test/log",
                                       "LOG_FILE": "log_analyzer.log",
-                                      "LOG_LEVEL": 'DEBUG'
+                                      "LOG_LEVEL": 'DEBUG',
+                                      "ERROR_LIMIT": 0.5
                                       })
         os.remove("good_cfg_file.cfg")
 
@@ -137,21 +140,21 @@ class ReportGenerationTest(unittest.TestCase):
                       }]
 
     def test_good_log(self):
-        report, error_perc = la.process("./test_data/good_sample.log", 10)
-        self.assertEqual(error_perc, 0)
+        report, error_limit = la.process("./test_data/good_sample.log", 10)
+        self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report)
 
-        report, error_perc = la.process("./test_data/good_sample.log", 2)
-        self.assertEqual(error_perc, 0)
+        report, error_limit = la.process("./test_data/good_sample.log", 2)
+        self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report[:2])
 
-        report, error_perc = la.process("./test_data/good_sample.log", 1)
-        self.assertEqual(error_perc, 0)
+        report, error_limit = la.process("./test_data/good_sample.log", 1)
+        self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report[:1])
 
     def test_bad_log(self):
-        report, error_perc = la.process("./test_data/bad_sample.log", 10)
-        self.assertEqual(error_perc, 2.0)
+        report, error_limit = la.process("./test_data/bad_sample.log", 10)
+        self.assertEqual(error_limit, 2.0)
 
 
 class LogAnalizerMainTest(unittest.TestCase):
@@ -161,7 +164,7 @@ class LogAnalizerMainTest(unittest.TestCase):
                       ignore_errors=True, onerror=None)
         os.mkdir("./test_data/test_reports")
 
-        la.main(['log_analyzer.py', '--config', './test_data/test.cfg'])
+        os.system("python3 ./log_analyzer.py --config ./test_data/test.cfg")
 
         self.assertTrue(filecmp.cmp(
                         './test_data/test_reports/report-20181024.html',
@@ -176,7 +179,7 @@ class LogAnalizerMainTest(unittest.TestCase):
                       ignore_errors=True, onerror=None)
         os.mkdir("./test_data/test_reports")
 
-        la.main(['log_analyzer.py', '--config', './test_data/test_gz.cfg'])
+        os.system("python3 ./log_analyzer.py --config ./test_data/test_gz.cfg")
 
         self.assertTrue(filecmp.cmp(
                        './test_data/test_reports/report-20181024.html',
