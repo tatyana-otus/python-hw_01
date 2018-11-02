@@ -20,6 +20,9 @@ import logging
 import configparser
 import argparse
 from collections import namedtuple
+from collections import defaultdict
+from datetime import datetime
+import operator
 
 config = {
     "REPORT_SIZE": 1000,
@@ -52,27 +55,33 @@ log_rec_pattern = re.compile(r"\S+\s+"        # $remote_addr
                              r"([\d\.]+)$")   # $request_time)
 
 
+OptDes = namedtuple('OptDes', 'flags default nargs help')
+options = {"config_path": OptDes('--config',
+                                 DEFAULT_CFG_PATH,
+                                 '?',
+                                 "Path to configuration file")}
+
+
 def get_last_log(log_dir):
     """
     Returns the last file name compared by date
     from 'log_dir' directory and matched date
     """
-
+    date_format = "%Y%m%d"
     logging.info("Geting last log file from: {}".format(log_dir))
 
     file_name = ""
-    date = 0
-    date_str = ""
+    date = datetime.min
 
     for file in os.listdir(log_dir):
         result = log_name_pattern.match(file)
         if result:
-            if date < int(result.group(1)):
+            cur_date = datetime.strptime(result.group(1), date_format)
+            if date < cur_date:
                 file_name = file
-                date_str = result.group(1)
-                date = int(result.group(1))
+                date = cur_date
 
-    return LogFile(file_name, date_str)
+    return LogFile(file_name, date.strftime(date_format))
 
 
 def gen_record(path):
@@ -80,7 +89,6 @@ def gen_record(path):
     Generates valid URL and request_time from 'path'
     if 'error'== True
     """
-
     log_open = gzip.open if path.endswith('.gz') else open
 
     with log_open(path, 'rt', encoding='utf-8') as log:
@@ -95,8 +103,7 @@ def get_raw_stat(file_path):
     total time - 'times_count'
     total number of errors - 'error_count'
     """
-
-    report = {}
+    report = defaultdict(list)
     urls_count = 0
     times_count = 0
     error_count = 0
@@ -108,10 +115,7 @@ def get_raw_stat(file_path):
             f_time = float(url_raw_stat.time)
             urls_count += 1
             times_count += f_time
-            if url_raw_stat.url in report:
-                report[url_raw_stat.url].append(f_time)
-            else:
-                report[url_raw_stat.url] = [f_time]
+            report[url_raw_stat.url].append(f_time)
 
     return ReportStat(urls_count, times_count, error_count, report)
 
@@ -124,7 +128,6 @@ def calculate_stat(report_stat, report_size):
     time_max
     time_med for each url in 'raw_report'
     """
-
     UrlStat = namedtuple('UrlStat', 'time_sum time_med time_max count url')
 
     logging.info("Calculating statistics ...")
@@ -163,17 +166,13 @@ def save_as_json(file_path, report, sample_report='report.html'):
     """
     Saves report as json file
     """
-
     logging.info("Saving report ...")
-    try:
-        with open(sample_report, 'rt') as html_report:
-            s = Template(html_report.read())
-            with open(file_path, 'wt', encoding='utf-8') as f_report:
-                f_report.write(s.safe_substitute(table_json=json.dumps(report,
-                               sort_keys=True)))
-    except Exception as e:
-        logging.error('Saving report Error')
-        raise e
+
+    with open(sample_report, 'rt') as html_report:
+        s = Template(html_report.read())
+        with open(file_path, 'wt', encoding='utf-8') as f_report:
+            f_report.write(s.safe_substitute(table_json=json.dumps(report,
+                           sort_keys=True)))
 
     logging.info("Report {} saved.".format(file_path))
 
@@ -185,7 +184,6 @@ def process_record(rec):
         False - if parsing OK
         True - if parsing ERROR
         """
-
         result = log_rec_pattern.match(rec)
         url = ""
         if result:
@@ -198,18 +196,23 @@ def process_record(rec):
             return UrlRawStat(url, 0, True)
 
 
-def parse_cfg_opt():
+def parse_opt(opt_des):
     """
     Getting the config file path
     """
-
+    opt = {}
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', default=DEFAULT_CFG_PATH,
-                        nargs='?', dest="cfg_file",
-                        help="Path to configuration file")
-
+    for key, des in opt_des.items():
+        parser.add_argument(des.flags, default=des.default,
+                            nargs=des.nargs, dest=key,
+                            help=des.help)
     args = parser.parse_args()
-    return args.cfg_file
+
+    for key in opt_des:
+        f = operator.attrgetter(key)
+        opt[key] = f(args)
+
+    return opt
 
 
 def get_cfg(file_path):
@@ -248,7 +251,6 @@ def is_valid_cfg_options(cfg):
     """
     Validates config options
     """
-
     return (os.path.isdir(cfg["LOG_DIR"]) and
             os.path.isdir(cfg["REPORT_DIR"]) and
             cfg["REPORT_SIZE"] > 0)
@@ -271,11 +273,10 @@ def setup_logging(file_path, log_level):
                         filemode='w')
 
 
-def process(log_path, report_size):
+def log_anal_proc(log_path, report_size):
     """
     Log-file processing and report generation
     """
-
     logging.info("Process: {}".format(log_path))
     report_stat = get_raw_stat(log_path)
 
@@ -297,16 +298,10 @@ def process(log_path, report_size):
 
 
 def main():
+    opt = parse_opt(options)
 
-    try:
-        cfg_path = parse_cfg_opt()
-
-        cfg = get_cfg(cfg_path)
-        setup_logging(cfg["LOG_FILE"], cfg["LOG_LEVEL"])
-
-    except (FileNotFoundError, configparser.ParsingError, ValueError) as e:
-        logging.error("Config error")
-        raise e
+    cfg = get_cfg(opt["config_path"])
+    setup_logging(cfg["LOG_FILE"], cfg["LOG_LEVEL"])
 
     if not is_valid_cfg_options(cfg):
         logging.error("Invalid config: {}".format(cfg))
@@ -322,7 +317,7 @@ def main():
     if not is_need_process:
         logging.info("No log-files to process")
         return
-    report, error_limit = process(log_path, cfg["REPORT_SIZE"])
+    report, error_limit = log_anal_proc(log_path, cfg["REPORT_SIZE"])
     if error_limit > cfg["ERROR_LIMIT"]:
         logging.error("Errors: {}%".format(error_limit))
         return
@@ -331,14 +326,9 @@ def main():
 
 
 if __name__ == "__main__":
-
     try:
         main()
-
     except KeyboardInterrupt:
-        logging.exception(traceback.format_exc())
-        logging.error("Exit with KeyboardInterrupt")
-
+        logging.exception("Exit with KeyboardInterrupt")
     except Exception as e:
-        logging.exception(traceback.format_exc())
-        logging.error("Exit with error: {}".format(e))
+        logging.exception("Exit with error: {}".format(e))
