@@ -140,24 +140,24 @@ class ReportGenerationTest(unittest.TestCase):
                       }]
 
     def test_good_log(self):
-        report, error_limit = la.log_anal_proc("./test_data/good_sample.log",
-                                               10)
+        report, error_limit = la.log_process("./test_data/good_sample.log",
+                                             10)
         self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report)
 
-        report, error_limit = la.log_anal_proc("./test_data/good_sample.log",
-                                               2)
+        report, error_limit = la.log_process("./test_data/good_sample.log",
+                                             2)
         self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report[:2])
 
-        report, error_limit = la.log_anal_proc("./test_data/good_sample.log",
-                                               1)
+        report, error_limit = la.log_process("./test_data/good_sample.log",
+                                             1)
         self.assertEqual(error_limit, 0)
         self.assertEqual(report, self.result_report[:1])
 
     def test_bad_log(self):
-        report, error_limit = la.log_anal_proc("./test_data/bad_sample.log",
-                                               10)
+        report, error_limit = la.log_process("./test_data/bad_sample.log",
+                                             10)
         self.assertEqual(error_limit, 2.0)
 
 

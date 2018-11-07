@@ -76,10 +76,13 @@ def get_last_log(log_dir):
     for file in os.listdir(log_dir):
         result = log_name_pattern.match(file)
         if result:
-            cur_date = datetime.strptime(result.group(1), date_format)
-            if date < cur_date:
-                file_name = file
-                date = cur_date
+            try:
+                cur_date = datetime.strptime(result.group(1), date_format)
+                if date < cur_date:
+                    file_name = file
+                    date = cur_date
+            except ValueError:
+                pass
 
     return LogFile(file_name, date.strftime(date_format))
 
@@ -178,22 +181,22 @@ def save_as_json(file_path, report, sample_report='report.html'):
 
 
 def process_record(rec):
-        """
-        Parses single string record from log-file,
-        returns URL, request_time and error:
-        False - if parsing OK
-        True - if parsing ERROR
-        """
-        result = log_rec_pattern.match(rec)
-        url = ""
-        if result:
-            request = re.match(r"\"\S+\s+(.*)\s+\S+\"", result.group(1))
-            if request:
-                url = request.group(1)
-            return UrlRawStat(url, result.group(2), False)
-        else:
-            logging.debug("Fail: {}".format(rec))
-            return UrlRawStat(url, 0, True)
+    """
+    Parses single string record from log-file,
+    returns URL, request_time and error:
+    False - if parsing OK
+    True - if parsing ERROR
+    """
+    result = log_rec_pattern.match(rec)
+    url = ""
+    if result:
+        request = re.match(r"\"\S+\s+(.*)\s+\S+\"", result.group(1))
+        if request:
+            url = request.group(1)
+        return UrlRawStat(url, result.group(2), False)
+    else:
+        logging.debug("Fail: {}".format(rec))
+        return UrlRawStat(url, 0, True)
 
 
 def parse_opt(opt_des):
@@ -273,7 +276,7 @@ def setup_logging(file_path, log_level):
                         filemode='w')
 
 
-def log_anal_proc(log_path, report_size):
+def log_process(log_path, report_size):
     """
     Log-file processing and report generation
     """
@@ -317,7 +320,7 @@ def main():
     if not is_need_process:
         logging.info("No log-files to process")
         return
-    report, error_limit = log_anal_proc(log_path, cfg["REPORT_SIZE"])
+    report, error_limit = log_process(log_path, cfg["REPORT_SIZE"])
     if error_limit > cfg["ERROR_LIMIT"]:
         logging.error("Errors: {}%".format(error_limit))
         return
